@@ -9,7 +9,9 @@ EditorBuildSettings:
     path: Assets/App/Scenes/Main.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
+    UnityEditor.XR.VisionOS.VisionOSSettings: {fileID: 11400000, guid: 99b826011f8ac401fa4565cf04c6e1de, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: e36668a0066884fe4a9499048ab57609, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 5141568836eb9934c9519da7fa8adf9b, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: fb79fabab174af9499c6a33f5460fd44, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 93eb2c042b2832247a647f05ccc492eb, type: 2}

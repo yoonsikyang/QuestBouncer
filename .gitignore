@@ -27,3 +27,4 @@
 /**/*.apk
 /Apk
 /.utmp
+.DS_Store
