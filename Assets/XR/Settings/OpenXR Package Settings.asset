@@ -977,10 +977,6 @@ MonoBehaviour:
   - {fileID: 2879479878363042251}
   - {fileID: 8227860430928953458}
   - {fileID: 4089026246504776968}
-  - {fileID: -6215051277771812506}
-  - {fileID: 6837828575398190206}
-  - {fileID: 3046802171556352512}
-  - {fileID: -3750283573031047253}
   - {fileID: -3892016891674076257}
   - {fileID: 3278412791089220887}
   - {fileID: -3086741541500385332}
@@ -1095,12 +1091,10 @@ MonoBehaviour:
     XR_FB_touch_controller_pro XR_FB_touch_controller_proximity XR_FB_composition_layer_depth_test
     XR_FB_haptic_amplitude_envelope XR_FB_haptic_pcm XR_META_local_dimming XR_META_hand_tracking_wide_motion_mode
     XR_EXT_hand_tracking_data_source XR_EXT_hand_joints_motion_range XR_META_touch_controller_plus
-    XR_META_simultaneous_hands_and_controllers XR_MSFT_hand_interaction XR_EXT_hand_interaction
-    XR_FB_hand_tracking_confidence XR_META_detached_controllers XR_LOGITECH_mx_ink_stylus_interaction
-    XR_META_colocation_discovery XR_META_spatial_entity_sharing XR_META_spatial_entity_group_sharing
-    XR_METAX1_dynamic_object_tracker XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
+    XR_META_simultaneous_hands_and_controllers XR_MSFT_hand_interaction XR_FB_hand_tracking_confidence
+    XR_META_detached_controllers XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
     XR_META_boundary_visibility XR_META_headset_id XR_FB_composition_layer_settings
-    XR_META_automatic_layer_filter XR_EXT_future '
+    XR_META_automatic_layer_filter '
   company: Meta
   priority: 0
   required: 0
@@ -1429,11 +1423,6 @@ MonoBehaviour:
   - {fileID: -3897401843310913561}
   - {fileID: -4265278714152257739}
   - {fileID: -4380412135162352149}
-  - {fileID: 6239682955429225415}
-  - {fileID: 3050570058965646124}
-  - {fileID: 984029946284014790}
-  - {fileID: -4561514256555486283}
-  - {fileID: -7678762988715635260}
   - {fileID: 3367742551893283265}
   - {fileID: -8435768429858782106}
   - {fileID: 221313884209870319}
@@ -1485,12 +1474,10 @@ MonoBehaviour:
     XR_FB_touch_controller_pro XR_FB_touch_controller_proximity XR_FB_composition_layer_depth_test
     XR_FB_haptic_amplitude_envelope XR_FB_haptic_pcm XR_META_local_dimming XR_META_hand_tracking_wide_motion_mode
     XR_EXT_hand_tracking_data_source XR_EXT_hand_joints_motion_range XR_META_touch_controller_plus
-    XR_META_simultaneous_hands_and_controllers XR_MSFT_hand_interaction XR_EXT_hand_interaction
-    XR_FB_hand_tracking_confidence XR_META_detached_controllers XR_LOGITECH_mx_ink_stylus_interaction
-    XR_META_colocation_discovery XR_META_spatial_entity_sharing XR_META_spatial_entity_group_sharing
-    XR_METAX1_dynamic_object_tracker XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
+    XR_META_simultaneous_hands_and_controllers XR_MSFT_hand_interaction XR_FB_hand_tracking_confidence
+    XR_META_detached_controllers XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
     XR_META_boundary_visibility XR_META_headset_id XR_FB_composition_layer_settings
-    XR_META_automatic_layer_filter XR_EXT_future '
+    XR_META_automatic_layer_filter '
   company: Meta
   priority: 0
   required: 0
