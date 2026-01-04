@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine.Serialization;
 
 namespace CubeBouncer
@@ -18,9 +19,10 @@ namespace CubeBouncer
         private readonly List<CubeManipulator> cubes = new();
         private AudioSource audioSource;
 
-        private void Start()
+        private async Task Start()
         {
             audioSource = GetComponent<AudioSource>();
+            await Task.Delay(1000);
             CreateGrid();
         }
 
