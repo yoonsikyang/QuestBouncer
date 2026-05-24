@@ -1,0 +1,174 @@
+// ComputeShader for calculating arrow matrices on GPU
+// Input: positions, velocities, colors
+// Output: TRS matrices for DrawMeshInstancedIndirect
+
+#pragma kernel CSMain
+
+// Arrow data input
+StructuredBuffer<float3> positions;
+StructuredBuffer<float3> velocities;
+StructuredBuffer<float> magnitudes;
+StructuredBuffer<float4> colors;
+
+// Output matrices and colors
+RWStructuredBuffer<float4x4> outputMatrices;
+RWStructuredBuffer<float4> outputColors;
+
+// Parameters
+float velocityScaleFactor;
+float arrowScale;
+float3 parentScale;
+float4x4 parentMatrix;
+int displayStepX;
+int displayStepY;
+int displayStepZ;
+int totalCount;
+float4 arrowBaseCorrection;
+float4 additionalRotation; // Quaternion for additional rotation
+
+// Grid indices for density filtering
+StructuredBuffer<int3> gridIndices;
+int useGridFiltering;
+
+float4x4 TRS(float3 pos, float4 rot, float3 scale)
+{
+    // Convert quaternion to rotation matrix (Unity column-major format)
+    float x = rot.x, y = rot.y, z = rot.z, w = rot.w;
+    float x2 = x + x, y2 = y + y, z2 = z + z;
+    float xx = x * x2, xy = x * y2, xz = x * z2;
+    float yy = y * y2, yz = y * z2, zz = z * z2;
+    float wx = w * x2, wy = w * y2, wz = w * z2;
+
+    // Unity uses column-major matrices, HLSL float4x4 is row-major by default
+    // So we need to construct it as transposed (each row becomes a column)
+    float4x4 m;
+    // Column 0 (X axis * scaleX)
+    m._m00 = (1.0 - (yy + zz)) * scale.x;
+    m._m10 = (xy + wz) * scale.x;
+    m._m20 = (xz - wy) * scale.x;
+    m._m30 = 0;
+    
+    // Column 1 (Y axis * scaleY)  
+    m._m01 = (xy - wz) * scale.y;
+    m._m11 = (1.0 - (xx + zz)) * scale.y;
+    m._m21 = (yz + wx) * scale.y;
+    m._m31 = 0;
+    
+    // Column 2 (Z axis * scaleZ)
+    m._m02 = (xz + wy) * scale.z;
+    m._m12 = (yz - wx) * scale.z;
+    m._m22 = (1.0 - (xx + yy)) * scale.z;
+    m._m32 = 0;
+    
+    // Column 3 (Position)
+    m._m03 = pos.x;
+    m._m13 = pos.y;
+    m._m23 = pos.z;
+    m._m33 = 1;
+    
+    return m;
+}
+
+float4 LookRotation(float3 forward)
+{
+    float3 up = float3(0, 0, 1);
+    float3 v1 = normalize(forward);
+    float3 v2 = normalize(cross(up, v1));
+    float3 v3 = cross(v1, v2);
+    
+    float m00 = v2.x, m01 = v2.y, m02 = v2.z;
+    float m10 = v3.x, m11 = v3.y, m12 = v3.z;
+    float m20 = v1.x, m21 = v1.y, m22 = v1.z;
+    
+    float num8 = (m00 + m11) + m22;
+    float4 q;
+    if (num8 > 0.0)
+    {
+        float num = sqrt(num8 + 1.0);
+        q.w = num * 0.5;
+        num = 0.5 / num;
+        q.x = (m12 - m21) * num;
+        q.y = (m20 - m02) * num;
+        q.z = (m01 - m10) * num;
+    }
+    else if ((m00 >= m11) && (m00 >= m22))
+    {
+        float num7 = sqrt(1.0 + m00 - m11 - m22);
+        float num4 = 0.5 / num7;
+        q.x = 0.5 * num7;
+        q.y = (m01 + m10) * num4;
+        q.z = (m02 + m20) * num4;
+        q.w = (m12 - m21) * num4;
+    }
+    else if (m11 > m22)
+    {
+        float num6 = sqrt(1.0 + m11 - m00 - m22);
+        float num3 = 0.5 / num6;
+        q.x = (m10 + m01) * num3;
+        q.y = 0.5 * num6;
+        q.z = (m21 + m12) * num3;
+        q.w = (m20 - m02) * num3;
+    }
+    else
+    {
+        float num5 = sqrt(1.0 + m22 - m00 - m11);
+        float num2 = 0.5 / num5;
+        q.x = (m20 + m02) * num2;
+        q.y = (m21 + m12) * num2;
+        q.z = 0.5 * num5;
+        q.w = (m01 - m10) * num2;
+    }
+    return q;
+}
+
+float4 MulQuat(float4 a, float4 b)
+{
+    return float4(
+        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+    );
+}
+
+[numthreads(256,1,1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)totalCount) return;
+    
+    // Grid filtering for density control
+    if (useGridFiltering > 0)
+    {
+        int3 idx = gridIndices[id.x];
+        if (idx.x % displayStepX != 0 || idx.y % displayStepY != 0 || idx.z % displayStepZ != 0)
+        {
+            // Mark as invisible by setting scale to zero
+            outputMatrices[id.x] = float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1);
+            outputColors[id.x] = float4(0,0,0,0);
+            return;
+        }
+    }
+    
+    float3 pos = positions[id.x];
+    float3 vel = velocities[id.x];
+    float mag = magnitudes[id.x];
+    float4 col = colors[id.x];
+    
+    // Calculate rotation
+    float velMag = length(vel);
+    float4 rot = velMag > 0.0001 ? LookRotation(normalize(vel)) : float4(0, 0, 0, 1);
+    // Apply rotations: additional rotation FIRST, then base correction
+    rot = MulQuat(additionalRotation, rot);
+    rot = MulQuat(rot, arrowBaseCorrection);
+    
+    // Calculate scale
+    float len = max(mag * velocityScaleFactor, 0.01);
+    float3 scale = float3(arrowScale, arrowScale, len * 0.1) * parentScale;
+    
+    // Apply parent transform to position
+    float4 worldPos = mul(parentMatrix, float4(pos, 1.0));
+    
+    // Create TRS matrix
+    outputMatrices[id.x] = TRS(worldPos.xyz, rot, scale);
+    outputColors[id.x] = col;
+}

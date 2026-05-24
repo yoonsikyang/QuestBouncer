@@ -1,0 +1,28 @@
+{
+    "currentDataFolder": "CarotidArtery",
+    "bloodAlpha": 0.6,
+    "velocityStepX": 1,
+    "velocityStepY": 1,
+    "velocityStepZ": 1,
+    "velocityScaleFactor": 0.001,
+    "velocityArrowScale": 0.005,
+    "velocityDisplayStepX": 1,
+    "velocityDisplayStepY": 1,
+    "velocityDisplayStepZ": 1,
+    "streamlineLineWidth": 0.002,
+    "heatmapResolution": 216,
+    "heatmapIntensity": 3.0,
+    "heatmapAlpha": 1.0,
+    "heatmapSpotSize": 0.02,
+    "arrowPlaneScale": 0.005,
+    "sliceArrowScale": 0.0004,
+    "sliceVelocityScaleFactor": 0.0005,
+    "targetPhysicalSize": 1.0,
+    "calibrationFactor": 1,
+    "globalVisualizationScale": 0.1,
+    "additionalRotation": {
+        "x": -180,
+        "y": 0,
+        "z": 0
+    }
+}

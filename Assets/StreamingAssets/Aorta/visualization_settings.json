@@ -1,0 +1,28 @@
+{
+    "currentDataFolder": "Aorta",
+    "bloodAlpha": 0.6,
+    "velocityStepX": 1,
+    "velocityStepY": 1,
+    "velocityStepZ": 1,
+    "velocityScaleFactor": 0.004,
+    "velocityArrowScale": 0.01,
+    "velocityDisplayStepX": 2,
+    "velocityDisplayStepY": 2,
+    "velocityDisplayStepZ": 2,
+    "streamlineLineWidth": 0.002,
+    "heatmapResolution": 216,
+    "heatmapIntensity": 3.0,
+    "heatmapAlpha": 1.0,
+    "heatmapSpotSize": 0.02,
+    "arrowPlaneScale": 0.005,
+    "sliceArrowScale": 0.01,
+    "sliceVelocityScaleFactor": 0.005,
+    "targetPhysicalSize": 1.0,
+    "calibrationFactor": 10,
+    "globalVisualizationScale": 0.1,
+    "additionalRotation": {
+        "x": -180,
+        "y": 0,
+        "z": 0
+    }
+}
