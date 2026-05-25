@@ -283,12 +283,12 @@ public class ButtonControllerManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
+        if (HanyangKeyInput.GetKeyDown(KeyCode.P))
         {
             ToggleExhibitionMenu();
         }
 
-        if (SupportsDesktopMouseToggle() && Input.GetKeyDown(KeyCode.M))
+        if (SupportsDesktopMouseToggle() && HanyangKeyInput.GetKeyDown(KeyCode.M))
         {
             ToggleMouseInput();
         }

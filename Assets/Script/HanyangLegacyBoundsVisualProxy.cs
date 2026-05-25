@@ -28,7 +28,6 @@ public sealed class HanyangLegacyBoundsVisualProxy : MonoBehaviour
     private Material shellMaterial;
     private Material handleMaterial;
     private bool loggedReady;
-    private bool meshModeVesselRendererHidden;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -68,28 +67,13 @@ public sealed class HanyangLegacyBoundsVisualProxy : MonoBehaviour
 
         HideConflictingBoundsVisuals();
         UpdateProxy();
-        ApplyMeshModeVesselVisibility();
+        EnsureVesselRendererVisible();
     }
 
-    private void ApplyMeshModeVesselVisibility()
+    private void EnsureVesselRendererVisible()
     {
-        if (vesselRenderer == null || Manager.Instance == null)
-            return;
-
-        if (Manager.Instance.visualizationMode == VisualizationMode.Mesh)
-        {
-            if (vesselRenderer.enabled)
-                vesselRenderer.enabled = false;
-
-            meshModeVesselRendererHidden = true;
-            return;
-        }
-
-        if (meshModeVesselRendererHidden)
-        {
+        if (vesselRenderer != null && !vesselRenderer.enabled)
             vesselRenderer.enabled = true;
-            meshModeVesselRendererHidden = false;
-        }
     }
 
     private bool TryBindSceneObjects()
@@ -128,9 +112,9 @@ public sealed class HanyangLegacyBoundsVisualProxy : MonoBehaviour
                 name = "Hanyang Legacy Bounds Shell Runtime",
                 renderQueue = 3000
             };
-            SetMaterialFloat(shellMaterial, "_Alpha", 0.88f);
-            SetMaterialFloat(shellMaterial, "_Intensity", 0.46f);
-            SetMaterialColor(shellMaterial, new Color(0.35f, 0.35f, 0.35f, 0.92f));
+            SetMaterialFloat(shellMaterial, "_Alpha", 0.32f);
+            SetMaterialFloat(shellMaterial, "_Intensity", 0.28f);
+            SetMaterialColor(shellMaterial, new Color(0.35f, 0.35f, 0.35f, 0.32f));
         }
 
         if (handleMaterial == null)
@@ -141,9 +125,9 @@ public sealed class HanyangLegacyBoundsVisualProxy : MonoBehaviour
             handleMaterial = new Material(shader)
             {
                 name = "Hanyang Legacy Bounds Handle Runtime",
-                renderQueue = 3500
+                renderQueue = 2000
             };
-            SetMaterialColor(handleMaterial, new Color(0f, 0.5f, 1f, 0.74f));
+            SetMaterialColor(handleMaterial, new Color(0f, 0.565f, 1f, 1f));
         }
     }
 

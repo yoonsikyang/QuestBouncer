@@ -140,6 +140,10 @@ public class VelocityLoader : MonoBehaviour
     private Vector4[] instanceColors;
     private MaterialPropertyBlock instanceMPB;
     private const int MAX_INSTANCES_PER_BATCH = 1023; // Unity limit
+
+    [Header("visionOS RealityKit Budget")]
+    [Tooltip("Caps pooled arrow GameObjects on visionOS RealityKit to avoid PolySpatial SynchronizationComponent limits.")]
+    public int visionOSMaxArrowObjects = 1500;
     
     [Header("ComputeBuffer Mode (Advanced)")]
     [Tooltip("Use ComputeShader + DrawMeshInstancedIndirect for maximum performance (requires GPU Instancing enabled)")]
@@ -167,6 +171,18 @@ public class VelocityLoader : MonoBehaviour
         }
     }
     private Dictionary<int, FrameBufferData> frameBuffersCache = new Dictionary<int, FrameBufferData>();
+
+    private static bool IsVisionOSRealityKitRuntime
+    {
+        get
+        {
+#if UNITY_VISIONOS && !UNITY_EDITOR
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
     
     // Shared output buffers (reused across frames)
     private ComputeBuffer matricesBuffer;
@@ -423,7 +439,7 @@ public class VelocityLoader : MonoBehaviour
         }
         */
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (HanyangKeyInput.GetKeyDown(KeyCode.Space))
         {
             TogglePlayback();
         }
@@ -1010,6 +1026,16 @@ public class VelocityLoader : MonoBehaviour
     {
         if (arrowPrefab == null || velocityParent == null) return;
 
+        int requestedCount = count;
+        if (IsVisionOSRealityKitRuntime)
+        {
+            count = Mathf.Min(count, Mathf.Max(0, visionOSMaxArrowObjects));
+            if (count < requestedCount)
+            {
+                Debug.Log($"[VelocityLoader] visionOS RealityKit arrow pool capped from {requestedCount} to {count} objects.");
+            }
+        }
+
         // Cleanup existing
         foreach (var obj in objectPool)
         {
@@ -1180,7 +1206,9 @@ public class VelocityLoader : MonoBehaviour
         if (!isPoolInitialized) return;
 
         VelocityData frame = loadedFrames[frameIndex];
-        int count = Mathf.Min(frame.positions.Count, objectPool.Count);
+        int dataCount = frame.positions.Count;
+        int poolCount = objectPool.Count;
+        int count = Mathf.Min(dataCount, poolCount);
 
         int dX = Mathf.Max(1, displayStepX);
         int dY = Mathf.Max(1, displayStepY);
@@ -1199,12 +1227,13 @@ public class VelocityLoader : MonoBehaviour
             }
             
             bool isVisible = true;
+            int sourceIndex = ResolveSourceIndex(i, dataCount, poolCount);
             
-            if (frame.gridIndices.Count > i)
+            if (frame.gridIndices.Count > sourceIndex)
             {
                 // Revert to Grid Modulo as requested by user.
                 // "If X is 2, print skipping one..." -> Modulo logic.
-                Vector3Int idx = frame.gridIndices[i];
+                Vector3Int idx = frame.gridIndices[sourceIndex];
                 if (idx.x % dX != 0 || 
                     idx.y % dY != 0 || 
                     idx.z % dZ != 0)
@@ -1216,7 +1245,7 @@ public class VelocityLoader : MonoBehaviour
             if (isVisible)
             {
                 if (!arrow.activeSelf) arrow.SetActive(true);
-                UpdateArrow(i, arrow, frame.positions[i], frame.velocities[i], frame.velocityMagnitudes[i], frame.colors[i]);
+                UpdateArrow(i, arrow, frame.positions[sourceIndex], frame.velocities[sourceIndex], frame.velocityMagnitudes[sourceIndex], frame.colors[sourceIndex]);
             }
             else
             {
@@ -1228,6 +1257,22 @@ public class VelocityLoader : MonoBehaviour
         {
             if (objectPool[i] != null && objectPool[i].activeSelf) objectPool[i].SetActive(false);
         }
+    }
+
+    private static int ResolveSourceIndex(int poolIndex, int dataCount, int poolCount)
+    {
+        if (dataCount <= 0 || poolCount <= 0)
+        {
+            return 0;
+        }
+
+        if (poolCount >= dataCount)
+        {
+            return poolIndex;
+        }
+
+        float normalized = (poolIndex + 0.5f) / poolCount;
+        return Mathf.Min(dataCount - 1, Mathf.FloorToInt(normalized * dataCount));
     }
     
     /// <summary>

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 019d9e67133646548a506370e966316a, type: 3}
   m_Name: PolySpatialSettings
   m_EditorClassIdentifier: Unity.PolySpatial::Unity.PolySpatial.PolySpatialSettings
-  m_FullUnityVersion: 6000.4.6f1 (0b051c2e5d54)
+  m_FullUnityVersion: 
   m_DisablePolySpatial: 0
   m_PackageVersion: 3.1.5
   m_EnableStatistics: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
     m_Bits: 0
   m_DisabledTrackers: []
   m_AdditionalTextureFormats: 
-  m_DefaultVolumeCameraWindowConfiguration: {fileID: 11400000, guid: 780e9fdf3d43042578153145466820cf, type: 2}
+  m_DefaultVolumeCameraWindowConfiguration: {fileID: 11400000, guid: 5e3111cbbe284945804909f2cd85d91a, type: 2}
   m_AutoCreateVolumeCamera: 1
   m_TransmitDebugInfo: 0
   m_EnableFallbackShaderConversion: 1

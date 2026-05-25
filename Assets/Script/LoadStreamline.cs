@@ -17,6 +17,12 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
     public Material lineMaterial;
     public float lineWidth = 0.002f;
 
+    [Header("visionOS RealityKit Budget")]
+    [Tooltip("Caps generated streamline frame GameObjects on visionOS RealityKit to avoid PolySpatial SynchronizationComponent limits.")]
+    public int visionOSMaxFramesToBuild = 1;
+    public int visionOSMaxLinesPerFrame = 400;
+    public int visionOSMaxPointsPerLine = 64;
+
     [Header("Coordinate Mapping")]
     public bool autoDetectBounds = true;
     public Vector3 dataMin;
@@ -82,6 +88,18 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
     private float cachedLineWidth = -1f;
 
     private string FullFolderPath => Path.Combine(rootFolder, subFolder);
+
+    private static bool IsVisionOSRealityKitRuntime
+    {
+        get
+        {
+#if UNITY_VISIONOS && !UNITY_EDITOR
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
 
     void Start()
     {
@@ -476,17 +494,30 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
         // Deterministic color per line for visual differentiation
         System.Random rng = new System.Random(frames.Count * 7919 + 17);
 
-        for (int i = 0; i < lines.Count; i++)
+        int lineCount = lines.Count;
+        int buildLineCount = lineCount;
+        if (IsVisionOSRealityKitRuntime)
         {
-            var pts = lines[i];
+            buildLineCount = Mathf.Min(lineCount, Mathf.Max(0, visionOSMaxLinesPerFrame));
+            if (buildLineCount < lineCount)
+            {
+                Debug.Log($"[LoadStreamline] visionOS RealityKit line count capped from {lineCount} to {buildLineCount} for frame {frames.Count}.");
+            }
+        }
+
+        for (int i = 0; i < buildLineCount; i++)
+        {
+            int sourceIndex = ResolveSourceIndex(i, lineCount, buildLineCount);
+            var pts = lines[sourceIndex];
             if (pts.Count < 2) continue;
 
             GameObject lineObj = new GameObject($"Line_{i}");
             lineObj.transform.SetParent(frame.transform, false);
             var lr = lineObj.AddComponent<LineRenderer>();
             lr.useWorldSpace = false;
-            lr.positionCount = pts.Count;
-            lr.SetPositions(pts.ToArray());
+            Vector3[] renderPoints = BuildRenderPoints(pts);
+            lr.positionCount = renderPoints.Length;
+            lr.SetPositions(renderPoints);
             float width = cachedLineWidth > 0f ? cachedLineWidth : lineWidth;
             lr.widthMultiplier = width;
             lr.numCapVertices = 2;
@@ -501,6 +532,24 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
         }
 
         return frame;
+    }
+
+    private Vector3[] BuildRenderPoints(List<Vector3> points)
+    {
+        if (!IsVisionOSRealityKitRuntime || points.Count <= visionOSMaxPointsPerLine || visionOSMaxPointsPerLine < 2)
+        {
+            return points.ToArray();
+        }
+
+        int pointCount = Mathf.Min(points.Count, visionOSMaxPointsPerLine);
+        Vector3[] sampledPoints = new Vector3[pointCount];
+        for (int i = 0; i < pointCount; i++)
+        {
+            int sourceIndex = ResolveSourceIndex(i, points.Count, pointCount);
+            sampledPoints[i] = points[sourceIndex];
+        }
+
+        return sampledPoints;
     }
 
     // Helper to get extract number
@@ -567,8 +616,22 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
         Debug.Log("Rebuilding Streamline Frames...");
         int framesProcessed = 0;
 
-        foreach (var originalLines in parsedFrames)
+        int parsedFrameCount = parsedFrames.Count;
+        int frameBuildCount = parsedFrameCount;
+        if (IsVisionOSRealityKitRuntime)
         {
+            frameBuildCount = Mathf.Min(parsedFrameCount, Mathf.Max(1, visionOSMaxFramesToBuild));
+            if (frameBuildCount < parsedFrameCount)
+            {
+                Debug.Log($"[LoadStreamline] visionOS RealityKit frame count capped from {parsedFrameCount} to {frameBuildCount}.");
+            }
+        }
+
+        for (int frameBuildIndex = 0; frameBuildIndex < frameBuildCount; frameBuildIndex++)
+        {
+             int sourceFrameIndex = ResolveSourceIndex(frameBuildIndex, parsedFrameCount, frameBuildCount);
+             var originalLines = parsedFrames[sourceFrameIndex];
+
              // 1. Clone
              var lines = CloneLines(originalLines);
              
@@ -592,6 +655,22 @@ public class LoadStreamline : MonoBehaviour, IPunObservable
         ShowFrame(currentFrameIndex);
         
         Debug.Log("Rebuild Complete");
+    }
+
+    private static int ResolveSourceIndex(int poolIndex, int dataCount, int poolCount)
+    {
+        if (dataCount <= 0 || poolCount <= 0)
+        {
+            return 0;
+        }
+
+        if (poolCount >= dataCount)
+        {
+            return poolIndex;
+        }
+
+        float normalized = (poolIndex + 0.5f) / poolCount;
+        return Mathf.Min(dataCount - 1, Mathf.FloorToInt(normalized * dataCount));
     }
 
     // Frame Control Interface

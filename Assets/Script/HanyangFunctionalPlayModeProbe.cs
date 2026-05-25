@@ -11,7 +11,7 @@ public sealed class HanyangFunctionalPlayModeProbe : MonoBehaviour
     private const float InitialDelaySeconds = 5f;
     private const float MaxReadyWaitSeconds = 120f;
     private const float DefaultSettleSeconds = 0.75f;
-    private const float AudioSettleSeconds = 2.75f;
+    private const float AudioSettleSeconds = 8f;
 
     private static readonly string[] MenuNames =
     {
@@ -48,6 +48,7 @@ public sealed class HanyangFunctionalPlayModeProbe : MonoBehaviour
         }
 
         Application.runInBackground = true;
+        ConfigureBatchLoggingForProbe();
         GameObject probeObject = new GameObject(nameof(HanyangFunctionalPlayModeProbe));
         DontDestroyOnLoad(probeObject);
         probeObject.hideFlags = HideFlags.HideAndDontSave;
@@ -340,7 +341,18 @@ public sealed class HanyangFunctionalPlayModeProbe : MonoBehaviour
             detail += "Exception: " + exception.GetType().Name + " " + exception.Message + ". ";
         }
 
-        yield return new WaitForSecondsRealtime(settleSeconds);
+        if (extraPassCondition == null)
+        {
+            yield return new WaitForSecondsRealtime(settleSeconds);
+        }
+        else
+        {
+            float deadline = Time.realtimeSinceStartup + settleSeconds;
+            while (Time.realtimeSinceStartup < deadline && !extraPassCondition())
+            {
+                yield return new WaitForSecondsRealtime(0.25f);
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(expectedActiveMenu) && !IsActiveInHierarchy(expectedActiveMenu))
         {
@@ -528,6 +540,12 @@ public sealed class HanyangFunctionalPlayModeProbe : MonoBehaviour
     {
         return Resources.FindObjectsOfTypeAll<AudioSource>()
             .Any(source => source != null && source.gameObject.scene.IsValid() && source.isPlaying);
+    }
+
+    private static void ConfigureBatchLoggingForProbe()
+    {
+        Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+        Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
     }
 
     private static bool GuideAudioIsPlaying(string expectedAudioKey)

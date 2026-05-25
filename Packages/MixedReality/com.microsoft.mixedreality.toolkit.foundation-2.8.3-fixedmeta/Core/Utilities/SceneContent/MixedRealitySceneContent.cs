@@ -98,7 +98,7 @@ namespace Microsoft.MixedReality.Toolkit
             MixedRealityExperienceSettingsProfile experienceSettingsProfile = MixedRealityToolkit.Instance?.ActiveProfile?.ExperienceSettingsProfile;
             if (experienceSettingsProfile == null && alignmentType == AlignmentType.AlignWithExperienceScale)
             {
-                Debug.LogWarning("[MRTK4 Compat] MixedRealitySceneContent skipped MRTK2 experience-scale alignment because no MRTK2 toolkit profile is active.");
+                Debug.LogWarning("[MRTK3 Compat] MixedRealitySceneContent skipped MRTK2 experience-scale alignment because no MRTK2 toolkit profile is active.");
                 contentInitialized = true;
                 return;
             }
@@ -181,7 +181,7 @@ namespace Microsoft.MixedReality.Toolkit
                 return true;
             }
 
-            Debug.LogWarning("[MRTK4 Compat] MixedRealitySceneContent could not resolve a main camera for content alignment.");
+            Debug.LogWarning("[MRTK3 Compat] MixedRealitySceneContent could not resolve a main camera for content alignment.");
             return false;
         }
     }

@@ -31,18 +31,19 @@ namespace Hanyang.QuestBouncer.Editor
         private const string MRTKSettingsPath = "Assets/MRTK.Generated/MRTKSettings.asset";
         private const string MRTKProfilePath = "Assets/App/Settings/AppMRTKProfile.asset";
         private const string UniversalRenderPipelineGlobalSettingsPath = "Assets/Settings/UniversalRenderPipelineGlobalSettings.asset";
-        private const string MRTK4XRRigGuid = "acbf65a81ce2cf94f82a0809298acf70";
-        private const string MRTK4InputSimulatorGuid = "ad5b753b73e311143a85055b15cea562";
-        private const string MRTK4XRRigName = "MRTK XR Rig";
-        private const string MRTK4InputSimulatorName = "MRTKInputSimulator";
-        private const string VisionOSVolumeCameraName = "PolySpatial Unbounded Volume Camera";
-        private const string DefaultUnboundedVolumeCameraConfigGuid = "780e9fdf3d43042578153145466820cf";
+        private const string MRTK3XRRigGuid = "acbf65a81ce2cf94f82a0809298acf70";
+        private const string MRTK3InputSimulatorGuid = "ad5b753b73e311143a85055b15cea562";
+        private const string MRTK3XRRigName = "MRTK XR Rig";
+        private const string MRTK3InputSimulatorName = "MRTKInputSimulator";
+        private const string VisionOSVolumeCameraName = "PolySpatial Hanyang Volume Camera";
+        private static readonly Vector3 VisionOSVolumeCameraDimensions = new Vector3(4f, 4f, 4f);
+        private const string HanyangBoundedVolumeCameraConfigGuid = "5e3111cbbe284945804909f2cd85d91a";
         private const string GraphicsToolsStandardShaderGuid = "c331f6c43a2ef0945864cb668f2653c9";
         private const string GraphicsToolsBackplateShaderGuid = "bf1548464ae044849a0ce555785ea4a2";
         private const string GraphicsToolsFrontplateShaderGuid = "3dee60a1b8e777e4f8b15a53c35077c0";
         private const string GraphicsToolsIridescentMapGuid = "a47616c60a914d2478946d4a5e0055ad";
         private const string GraphicsToolsBlobTextureGuid = "0500244013d182d43a4337685f8c618e";
-        private const string MRTK4TraditionalBoundsVisualsPath = "Packages/org.mixedrealitytoolkit.spatialmanipulation/BoundsControl/Prefabs/BoundingBoxWithTraditionalHandles.prefab";
+        private const string MRTK3TraditionalBoundsVisualsPath = "Packages/org.mixedrealitytoolkit.spatialmanipulation/BoundsControl/Prefabs/BoundingBoxWithTraditionalHandles.prefab";
         private const int PlayModeCameraCaptureWidth = 1024;
         private const int PlayModeCameraCaptureHeight = 768;
         private const string PlayModeCapturePendingKey = "HanyangParity.PlayModeCapture.Pending";
@@ -76,13 +77,16 @@ namespace Hanyang.QuestBouncer.Editor
         };
         private static readonly string[] HolographicStandardMaterialPaths =
         {
-            "Assets/Materials/HolographicButtonIconFontMaterial.mat",
             "Assets/Materials/MRTK_GrabbableDots2RowsV1.mat",
-            "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Interactable/Materials/HolographicButtonIconFontMaterial.mat",
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Interactable/Materials/MRTK_GrabbableDots.mat",
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Interactable/Materials/MRTK_GrabbableDots2RowsH.mat",
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Interactable/Materials/MRTK_GrabbableDots2RowsV1.mat",
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Interactable/Materials/MRTK_GrabbableDots2RowsV2.mat"
+        };
+        private static readonly string[] HolographicButtonIconMaterialSearchFolders =
+        {
+            "Assets",
+            "Packages"
         };
         private static readonly string[] LegacyBoundingBoxShellMaterialPaths =
         {
@@ -99,7 +103,7 @@ namespace Hanyang.QuestBouncer.Editor
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Materials/BoundingBoxLines.mat",
             "Packages/com.microsoft.mixedreality.toolkit.foundation/SDK/Features/UX/Materials/BoundsControlHandleDefault.mat"
         };
-        private static readonly string[] MRTK4BoundsHandleMaterialPaths =
+        private static readonly string[] MRTK3BoundsHandleMaterialPaths =
         {
             "Packages/org.mixedrealitytoolkit.standardassets/Materials/BoundsControl/BoundsHandle.mat"
         };
@@ -271,7 +275,7 @@ namespace Hanyang.QuestBouncer.Editor
             if (!EditorUserBuildSettings.SwitchActiveBuildTarget(group, target))
                 throw new InvalidOperationException("Failed to switch active build target to visionOS.");
 
-            BuildPlayer(group, target, buildPath, description);
+            BuildPlayer(group, target, buildPath, description, useVisionOSSimulatorSdk: useSimulatorSdk);
         }
 
         [MenuItem("Hanyang Parity/HoloLens/Configure Build Settings")]
@@ -308,7 +312,7 @@ namespace Hanyang.QuestBouncer.Editor
         private static void ConfigureBuildScenes(bool ensureVisionOSVolumeCamera)
         {
             EnsureSceneExists();
-            ApplyMRTK4CameraAndInput(saveScene: !ensureVisionOSVolumeCamera);
+            ApplyMRTK3CameraAndInput(saveScene: !ensureVisionOSVolumeCamera);
             ApplyUnity6VisualParity(saveScene: !ensureVisionOSVolumeCamera);
             if (ensureVisionOSVolumeCamera)
             {
@@ -326,10 +330,10 @@ namespace Hanyang.QuestBouncer.Editor
             };
         }
 
-        [MenuItem("Hanyang Parity/Scene/Apply MRTK4 Camera And Input")]
-        public static void ApplyMRTK4CameraAndInput()
+        [MenuItem("Hanyang Parity/Scene/Apply MRTK3 Camera And Input")]
+        public static void ApplyMRTK3CameraAndInput()
         {
-            ApplyMRTK4CameraAndInput(saveScene: true);
+            ApplyMRTK3CameraAndInput(saveScene: true);
         }
 
         [MenuItem("Hanyang Parity/Scene/Open Scene And Enter Play Mode")]
@@ -349,7 +353,7 @@ namespace Hanyang.QuestBouncer.Editor
             EnsureSceneExists();
             ConfigureEditorPlayModeBuildTarget();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            ApplyMRTK4CameraAndInput(saveScene: true);
+            ApplyMRTK3CameraAndInput(saveScene: true);
             ApplyUnity6VisualParity(saveScene: true);
             SetVisionOSVolumeCameraActive(SceneManager.GetActiveScene(), false);
             EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
@@ -381,7 +385,7 @@ namespace Hanyang.QuestBouncer.Editor
             }
         }
 
-        private static void ApplyMRTK4CameraAndInput(bool saveScene)
+        private static void ApplyMRTK3CameraAndInput(bool saveScene)
         {
             EnsureSceneExists();
 
@@ -391,22 +395,22 @@ namespace Hanyang.QuestBouncer.Editor
                 : EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
             var removedRoots = RemoveLegacyMRTK2Roots(scene);
-            var rig = EnsurePrefabRoot(scene, MRTK4XRRigGuid, MRTK4XRRigName);
-            var simulator = EnsurePrefabRoot(scene, MRTK4InputSimulatorGuid, MRTK4InputSimulatorName);
+            var rig = EnsurePrefabRoot(scene, MRTK3XRRigGuid, MRTK3XRRigName);
+            var simulator = EnsurePrefabRoot(scene, MRTK3InputSimulatorGuid, MRTK3InputSimulatorName);
 
             ResetRootTransform(rig.transform);
             ResetRootTransform(simulator.transform);
             EnsureRigCameraSetup(rig);
-            EnsureMRTK4SpatialManipulation(scene);
+            EnsureMRTK3SpatialManipulation(scene);
 
             EditorSceneManager.MarkSceneDirty(scene);
             if (saveScene && !EditorSceneManager.SaveScene(scene))
-                throw new IOException($"Failed to save MRTK4 camera/input scene changes: {ScenePath}");
+                throw new IOException($"Failed to save MRTK3/XRI camera/input scene changes: {ScenePath}");
 
             AssetDatabase.SaveAssets();
 
             var removedSummary = removedRoots.Count == 0 ? "(none)" : string.Join(", ", removedRoots);
-            Debug.Log($"Hanyang parity scene camera/input normalized to MRTK4. Removed legacy MRTK2 roots: {removedSummary}. Roots present: {MRTK4XRRigName}, {MRTK4InputSimulatorName}.");
+            Debug.Log($"Hanyang parity scene camera/input normalized to MRTK3/XRI. Removed legacy MRTK2 roots: {removedSummary}. Roots present: {MRTK3XRRigName}, {MRTK3InputSimulatorName}.");
         }
 
         [MenuItem("Hanyang Parity/Scene/Apply visionOS Volume Camera")]
@@ -486,19 +490,19 @@ namespace Hanyang.QuestBouncer.Editor
             volumeCameraObject.SetActive(true);
             ResetRootTransform(volumeCameraObject.transform);
 
-            var unboundedConfigPath = AssetDatabase.GUIDToAssetPath(DefaultUnboundedVolumeCameraConfigGuid);
-            if (string.IsNullOrWhiteSpace(unboundedConfigPath))
-                throw new FileNotFoundException($"Could not resolve PolySpatial default unbounded VolumeCamera config GUID {DefaultUnboundedVolumeCameraConfigGuid}.");
+            var boundedConfigPath = AssetDatabase.GUIDToAssetPath(HanyangBoundedVolumeCameraConfigGuid);
+            if (string.IsNullOrWhiteSpace(boundedConfigPath))
+                throw new FileNotFoundException($"Could not resolve Hanyang bounded VolumeCamera config GUID {HanyangBoundedVolumeCameraConfigGuid}.");
 
-            var unboundedConfig = AssetDatabase.LoadMainAssetAtPath(unboundedConfigPath);
-            if (unboundedConfig == null)
-                throw new FileNotFoundException("Could not load PolySpatial default unbounded VolumeCamera config.", unboundedConfigPath);
+            var boundedConfig = AssetDatabase.LoadMainAssetAtPath(boundedConfigPath);
+            if (boundedConfig == null)
+                throw new FileNotFoundException("Could not load Hanyang bounded VolumeCamera config.", boundedConfigPath);
 
             var serializedObject = new SerializedObject(volumeCamera);
-            SetVector3Property(serializedObject, "m_Dimensions", Vector3.one);
+            SetVector3Property(serializedObject, "m_Dimensions", VisionOSVolumeCameraDimensions);
             SetBoolProperty(serializedObject, "m_ScaleWithWindow", true);
             SetBoolProperty(serializedObject, "m_IsUniformScale", false);
-            SetObjectReferenceProperty(serializedObject, "m_OutputConfiguration", unboundedConfig);
+            SetObjectReferenceProperty(serializedObject, "m_OutputConfiguration", boundedConfig);
             SetIntProperty(serializedObject, "m_CullingMask", -1);
             SetBoolProperty(serializedObject, "OpenWindowOnLoad", true);
             SetIntProperty(serializedObject, "m_TargetDisplay", 0);
@@ -553,15 +557,15 @@ namespace Hanyang.QuestBouncer.Editor
 
             var prefabPath = AssetDatabase.GUIDToAssetPath(prefabGuid);
             if (string.IsNullOrWhiteSpace(prefabPath))
-                throw new FileNotFoundException($"Could not resolve MRTK4 prefab GUID {prefabGuid} for {rootName}.");
+                throw new FileNotFoundException($"Could not resolve MRTK3 prefab GUID {prefabGuid} for {rootName}.");
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (prefab == null)
-                throw new FileNotFoundException($"Could not load MRTK4 prefab for {rootName}.", prefabPath);
+                throw new FileNotFoundException($"Could not load MRTK3 prefab for {rootName}.", prefabPath);
 
             var instance = PrefabUtility.InstantiatePrefab(prefab, scene) as GameObject;
             if (instance == null)
-                throw new InvalidOperationException($"Failed to instantiate MRTK4 prefab {rootName} from {prefabPath}.");
+                throw new InvalidOperationException($"Failed to instantiate MRTK3 prefab {rootName} from {prefabPath}.");
 
             instance.name = rootName;
             return instance;
@@ -581,7 +585,7 @@ namespace Hanyang.QuestBouncer.Editor
 
             var cameras = rig.GetComponentsInChildren<Camera>(includeInactive: true);
             if (cameras.Length == 0)
-                throw new InvalidOperationException($"{MRTK4XRRigName} does not contain a camera.");
+                throw new InvalidOperationException($"{MRTK3XRRigName} does not contain a camera.");
 
             foreach (var camera in cameras)
             {
@@ -592,12 +596,12 @@ namespace Hanyang.QuestBouncer.Editor
             }
         }
 
-        private static void EnsureMRTK4SpatialManipulation(Scene scene)
+        private static void EnsureMRTK3SpatialManipulation(Scene scene)
         {
             var objectParent = FindSceneTransform(scene, "Object Parent")?.gameObject;
             if (objectParent == null)
             {
-                Debug.LogWarning("Hanyang parity could not find Object Parent for MRTK4 spatial manipulation setup.");
+                Debug.LogWarning("Hanyang parity could not find Object Parent for MRTK3 spatial manipulation setup.");
                 return;
             }
 
@@ -605,7 +609,7 @@ namespace Hanyang.QuestBouncer.Editor
             if (objectManipulator == null)
                 objectManipulator = objectParent.AddComponent<MixedReality.Toolkit.SpatialManipulation.ObjectManipulator>();
 
-            RemovePersistedMRTK4BoundsVisuals(objectParent.transform);
+            RemovePersistedMRTK3BoundsVisuals(objectParent.transform);
 
             objectManipulator.HostTransform = objectParent.transform;
             objectManipulator.AllowedManipulations =
@@ -627,12 +631,12 @@ namespace Hanyang.QuestBouncer.Editor
 
             ConfigureBoundsControlSerialized(boundsControl, objectParent.transform, objectManipulator);
             boundsControl.enabled = true;
-            ApplyMRTK4BoundsVisualParity(boundsControl);
+            ApplyMRTK3BoundsVisualParity(boundsControl);
             EditorUtility.SetDirty(boundsControl);
             EditorUtility.SetDirty(objectParent);
         }
 
-        private static void RemovePersistedMRTK4BoundsVisuals(Transform objectParent)
+        private static void RemovePersistedMRTK3BoundsVisuals(Transform objectParent)
         {
             var visualRoots = objectParent
                 .GetComponentsInChildren<Transform>(includeInactive: true)
@@ -652,9 +656,9 @@ namespace Hanyang.QuestBouncer.Editor
             Transform target,
             MixedReality.Toolkit.SpatialManipulation.ObjectManipulator objectManipulator)
         {
-            var boundsVisualsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MRTK4TraditionalBoundsVisualsPath);
+            var boundsVisualsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(MRTK3TraditionalBoundsVisualsPath);
             if (boundsVisualsPrefab == null)
-                Debug.LogWarning($"Hanyang parity MRTK4 bounds visuals prefab not found: {MRTK4TraditionalBoundsVisualsPath}");
+                Debug.LogWarning($"Hanyang parity MRTK3 bounds visuals prefab not found: {MRTK3TraditionalBoundsVisualsPath}");
 
             var serializedObject = new SerializedObject(boundsControl);
             serializedObject.Update();
@@ -718,7 +722,7 @@ namespace Hanyang.QuestBouncer.Editor
                 collider = objectParent.AddComponent<BoxCollider>();
 
             // Keep the legacy HoloLens BoundsControl override from unity.unity.
-            // Recomputing from renderers makes MRTK4 bounds smaller and shifts them down.
+            // Recomputing from renderers makes MRTK3 bounds smaller and shifts them down.
             collider.center = LegacyObjectParentColliderCenter;
             collider.size = LegacyObjectParentColliderSize;
             collider.isTrigger = false;
@@ -726,7 +730,7 @@ namespace Hanyang.QuestBouncer.Editor
             return collider;
         }
 
-        private static void ApplyMRTK4BoundsVisualParity(MixedReality.Toolkit.SpatialManipulation.BoundsControl boundsControl)
+        private static void ApplyMRTK3BoundsVisualParity(MixedReality.Toolkit.SpatialManipulation.BoundsControl boundsControl)
         {
             foreach (var renderer in boundsControl.GetComponentsInChildren<Renderer>(includeInactive: true))
             {
@@ -828,7 +832,7 @@ namespace Hanyang.QuestBouncer.Editor
                 EditorUtility.SetDirty(component);
             }
 
-            Debug.Log($"{MRTK4XRRigName} camera height normalized to the original HoloLens scene baseline.");
+            Debug.Log($"{MRTK3XRRigName} camera height normalized to the original HoloLens scene baseline.");
         }
 
         private static void EnsureUniversalAdditionalCameraData(Camera camera)
@@ -862,6 +866,7 @@ namespace Hanyang.QuestBouncer.Editor
                 HolographicStandardMaterialPaths,
                 GraphicsToolsStandardShaderGuid,
                 ConfigureStandardMaterial);
+            materialCount += AssignShaderToHolographicButtonIconMaterials();
             materialCount += AssignShaderToMaterialsByName(
                 VesselMaterialPaths,
                 "Universal Render Pipeline/Lit",
@@ -875,9 +880,39 @@ namespace Hanyang.QuestBouncer.Editor
                 "Universal Render Pipeline/Lit",
                 ConfigureBoundingBoxHandleMaterial);
             materialCount += AssignShaderToMaterials(
-                MRTK4BoundsHandleMaterialPaths,
+                MRTK3BoundsHandleMaterialPaths,
                 GraphicsToolsStandardShaderGuid,
-                ConfigureMRTK4BoundsHandleMaterial);
+                ConfigureMRTK3BoundsHandleMaterial);
+
+            return materialCount;
+        }
+
+        private static int AssignShaderToHolographicButtonIconMaterials()
+        {
+            var shader = LoadShaderByGuid(GraphicsToolsStandardShaderGuid);
+            var materialPaths = AssetDatabase
+                .FindAssets("HolographicButtonIcon t:Material", HolographicButtonIconMaterialSearchFolders)
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .Where(path => Path.GetFileNameWithoutExtension(path).StartsWith("HolographicButtonIcon", StringComparison.OrdinalIgnoreCase))
+                .Distinct()
+                .ToArray();
+
+            var materialCount = 0;
+            foreach (var materialPath in materialPaths)
+            {
+                var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+                if (material == null)
+                {
+                    Debug.LogWarning($"Hanyang parity button icon material not found: {materialPath}");
+                    continue;
+                }
+
+                material.shader = shader;
+                ConfigureButtonIconMaterial(material);
+                EditorUtility.SetDirty(material);
+                materialCount++;
+            }
 
             return materialCount;
         }
@@ -1055,6 +1090,34 @@ namespace Hanyang.QuestBouncer.Editor
             SetMaterialColor(material, "_EmissionColor", new Color(0f, 0f, 0f, 0f));
         }
 
+        private static void ConfigureButtonIconMaterial(Material material)
+        {
+            material.enableInstancing = false;
+            material.renderQueue = 2450;
+            material.SetOverrideTag("RenderType", "TransparentCutout");
+            material.EnableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_USECOLOR_ON");
+            material.EnableKeyword("_USEMAINTEX_ON");
+            material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.EnableKeyword("_SURFACE_TYPE_OPAQUE");
+
+            SetMaterialFloat(material, "_Mode", 1f);
+            SetMaterialFloat(material, "_Surface", 0f);
+            SetMaterialFloat(material, "_Blend", 0f);
+            SetMaterialFloat(material, "_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
+            SetMaterialFloat(material, "_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
+            SetMaterialFloat(material, "_ZWrite", 1f);
+            SetMaterialFloat(material, "_Cull", (float)UnityEngine.Rendering.CullMode.Off);
+            SetMaterialFloat(material, "_AlphaClip", 1f);
+            SetMaterialFloat(material, "_Cutoff", 0.5f);
+            SetMaterialFloat(material, "_UseColor", 1f);
+            SetMaterialFloat(material, "_UseMainTex", 1f);
+            SetMaterialFloat(material, "_UseWorldScale", 1f);
+            SetMaterialColor(material, "_BaseColor", Color.white);
+            SetMaterialColor(material, "_Color", Color.white);
+            SetMaterialColor(material, "_EmissionColor", new Color(0f, 0f, 0f, 0f));
+        }
+
         private static void ConfigureVesselMaterial(Material material)
         {
             material.enableInstancing = true;
@@ -1063,7 +1126,7 @@ namespace Hanyang.QuestBouncer.Editor
             material.DisableKeyword("_SURFACE_TYPE_OPAQUE");
             SetMaterialFloat(material, "_Surface", 1f);
             SetMaterialFloat(material, "_Blend", 1f);
-            SetMaterialFloat(material, "_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            SetMaterialFloat(material, "_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
             SetMaterialFloat(material, "_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             SetMaterialFloat(material, "_SrcBlendAlpha", 1f);
             SetMaterialFloat(material, "_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
@@ -1071,7 +1134,7 @@ namespace Hanyang.QuestBouncer.Editor
             SetMaterialFloat(material, "_Metallic", 0.568f);
             SetMaterialFloat(material, "_Smoothness", 1f);
             SetMaterialFloat(material, "_Glossiness", 0f);
-            var vesselColor = new Color(0.509434f, 0.509434f, 0.509434f, 1f);
+            var vesselColor = new Color(0.509434f, 0.509434f, 0.509434f, 0.48235294f);
             SetMaterialColor(material, "_BaseColor", vesselColor);
             SetMaterialColor(material, "_Color", vesselColor);
         }
@@ -1147,7 +1210,7 @@ namespace Hanyang.QuestBouncer.Editor
             SetMaterialColor(material, "_Color", handleColor);
         }
 
-        private static void ConfigureMRTK4BoundsHandleMaterial(Material material)
+        private static void ConfigureMRTK3BoundsHandleMaterial(Material material)
         {
             material.enableInstancing = true;
             material.renderQueue = 3999;
@@ -1482,7 +1545,7 @@ namespace Hanyang.QuestBouncer.Editor
 
             activeInputHandler.intValue = 1;
             settings.ApplyModifiedPropertiesWithoutUndo();
-            Debug.Log("PlayerSettings.activeInputHandler configured to Input System Package (New) for MRTK4 parity with git main.");
+            Debug.Log("PlayerSettings.activeInputHandler configured to Input System Package (New) for MRTK3/XRI parity.");
         }
 
         private static void ConfigureXRLoader(BuildTargetGroup group, string loaderTypeFullName, string fallbackAssetPath)
@@ -1894,7 +1957,12 @@ namespace Hanyang.QuestBouncer.Editor
             return asset;
         }
 
-        private static void BuildPlayer(BuildTargetGroup group, BuildTarget target, string buildPath, string description)
+        private static void BuildPlayer(
+            BuildTargetGroup group,
+            BuildTarget target,
+            string buildPath,
+            string description,
+            bool useVisionOSSimulatorSdk = false)
         {
             var fullBuildPath = Path.GetFullPath(buildPath);
             Directory.CreateDirectory(fullBuildPath);
@@ -1911,7 +1979,211 @@ namespace Hanyang.QuestBouncer.Editor
             if (report.summary.result != BuildResult.Succeeded)
                 throw new InvalidOperationException($"{description} build failed: {report.summary.result}");
 
+            PatchVisionOSExport(group, fullBuildPath, report, useVisionOSSimulatorSdk);
             Debug.Log($"{description} exported to {fullBuildPath}");
+        }
+
+        private static void PatchVisionOSExport(
+            BuildTargetGroup group,
+            string fullBuildPath,
+            BuildReport report,
+            bool useVisionOSSimulatorSdk)
+        {
+            if (!string.Equals(group.ToString(), "VisionOS", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            EnsurePolySpatialVisionOSPostprocess(fullBuildPath, report);
+            PatchVisionOSSwiftSettings(fullBuildPath);
+            PatchVisionOSNativeLibrary(fullBuildPath, useVisionOSSimulatorSdk);
+            PatchVisionOSXcodeProject(fullBuildPath);
+        }
+
+        private static void EnsurePolySpatialVisionOSPostprocess(string fullBuildPath, BuildReport report)
+        {
+            var polySpatialAppPath = Path.Combine(fullBuildPath, "MainApp/UnityPolySpatialApp.swift");
+            var pluginRoot = Path.Combine(fullBuildPath, "Libraries/com.unity.polyspatial.visionos/Plugins");
+            var simulatorLibraryPath = Path.Combine(pluginRoot, "libPolySpatial_xrsimulator.a");
+            var deviceLibraryPath = Path.Combine(pluginRoot, "libPolySpatial_xros.a");
+            if (File.Exists(polySpatialAppPath) && (File.Exists(simulatorLibraryPath) || File.Exists(deviceLibraryPath)))
+                return;
+
+            var processorType = FindType("Unity.PolySpatial.Internals.Editor.VisionOSBuildProcessor");
+            if (processorType == null)
+                throw new InvalidOperationException("Unity PolySpatial visionOS build processor is unavailable.");
+
+            var processor = Activator.CreateInstance(processorType, nonPublic: true);
+            InvokeVisionOSBuildProcessor(processorType, processor, "DoPreprocessBuild", report);
+            InvokeVisionOSBuildProcessor(processorType, processor, "DoPostprocessBuild", report);
+
+            if (!File.Exists(polySpatialAppPath) || (!File.Exists(simulatorLibraryPath) && !File.Exists(deviceLibraryPath)))
+            {
+                throw new InvalidOperationException(
+                    "Unity PolySpatial visionOS postprocess did not produce the RealityKit Swift app shell and native library.");
+            }
+
+            Debug.Log($"Applied PolySpatial visionOS RealityKit postprocess: {fullBuildPath}");
+        }
+
+        private static void InvokeVisionOSBuildProcessor(Type processorType, object processor, string methodName, BuildReport report)
+        {
+            var method = processorType.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method == null)
+                throw new MissingMethodException(processorType.FullName, methodName);
+
+            try
+            {
+                method.Invoke(processor, new object[] { report });
+            }
+            catch (TargetInvocationException exception) when (exception.InnerException != null)
+            {
+                throw new InvalidOperationException(
+                    $"Unity PolySpatial visionOS build processor failed in {methodName}.",
+                    exception.InnerException);
+            }
+        }
+
+        private static void PatchVisionOSSwiftSettings(string fullBuildPath)
+        {
+            var compositorPath = Path.Combine(
+                fullBuildPath,
+                "Libraries/com.unity.xr.visionos/Runtime/Plugins/visionos/UnityCompositorSpace.swift");
+            if (!File.Exists(compositorPath))
+            {
+                Debug.LogWarning($"visionOS Swift compositor file missing: {compositorPath}");
+                return;
+            }
+
+            var source = File.ReadAllText(compositorPath);
+            var patched = source
+                .Replace(
+                    "\n        .persistentSystemOverlays(VisionOSPersistentSystemOverlays)",
+                    string.Empty)
+                .Replace(LegacyCompositorVisionOSSettingsBlock, "import SwiftUI\n");
+
+            var generatedSettingsPath = Path.Combine(fullBuildPath, "MainApp/UnityVisionOSSettings.swift");
+            if (File.Exists(generatedSettingsPath))
+            {
+                if (!string.Equals(source, patched, StringComparison.Ordinal))
+                {
+                    File.WriteAllText(compositorPath, patched);
+                    Debug.Log($"Patched visionOS Swift compositor settings: {compositorPath}");
+                }
+
+                PatchVisionOSGeneratedSettingsSwift(fullBuildPath);
+                return;
+            }
+
+            if (patched.Contains("HanyangVisionOSSwiftSettingsApplied"))
+            {
+                if (!string.Equals(source, patched, StringComparison.Ordinal))
+                    File.WriteAllText(compositorPath, patched);
+                return;
+            }
+
+            const string importMarker = "import SwiftUI\n";
+            if (!patched.Contains(importMarker))
+            {
+                Debug.LogWarning($"visionOS Swift compositor import marker missing: {compositorPath}");
+                return;
+            }
+
+            File.WriteAllText(compositorPath, patched.Replace(importMarker, LegacyCompositorVisionOSSettingsBlock));
+            Debug.Log($"Patched visionOS Swift compositor settings: {compositorPath}");
+        }
+
+        private const string LegacyCompositorVisionOSSettingsBlock = @"import SwiftUI
+
+private let HanyangVisionOSSwiftSettingsApplied = true
+var VisionOSEnableHighQualityRecordingMode = false
+var VisionOSEnableFoveation = false
+var VisionOSUpperLimbVisibility: Visibility = .automatic
+var VisionOSPersistentSystemOverlays: Visibility = .automatic
+var VisionOSImmersionStyle: ImmersionStyle = .automatic
+var VisionOSSkipPresent = false
+var VisionOSEDRHeadroom = 1.2
+";
+
+        private static void PatchVisionOSGeneratedSettingsSwift(string fullBuildPath)
+        {
+            var settingsPath = Path.Combine(fullBuildPath, "MainApp/UnityVisionOSSettings.swift");
+            if (!File.Exists(settingsPath))
+                return;
+
+            var source = File.ReadAllText(settingsPath);
+            var volumeDimensions = FormattableString.Invariant(
+                $"{VisionOSVolumeCameraDimensions.x:0.000}, {VisionOSVolumeCameraDimensions.y:0.000}, {VisionOSVolumeCameraDimensions.z:0.000}");
+            var patched = source
+                .Replace("let unityStartInBatchMode = true", "let unityStartInBatchMode = false")
+                .Replace(" .persistentSystemOverlays(.automatic)", string.Empty)
+                .Replace(" .persistentSystemOverlays(.visible)", string.Empty)
+                .Replace(" .persistentSystemOverlays(.hidden)", string.Empty)
+                .Replace(".init(1.000, 1.000, 1.000)", $".init({volumeDimensions})");
+            if (string.Equals(source, patched, StringComparison.Ordinal))
+                return;
+
+            File.WriteAllText(settingsPath, patched);
+            Debug.Log($"Patched visionOS PolySpatial Swift settings: {settingsPath}");
+        }
+
+        private static void PatchVisionOSNativeLibrary(string fullBuildPath, bool useSimulatorSdk)
+        {
+            var librariesPath = Path.Combine(fullBuildPath, "Libraries");
+            var destinationPath = Path.Combine(librariesPath, "libUnityVisionOS.a");
+
+            var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            var packageCachePath = Path.Combine(projectRoot, "Library/PackageCache");
+            if (!Directory.Exists(packageCachePath))
+            {
+                Debug.LogWarning($"Unity package cache missing: {packageCachePath}");
+                return;
+            }
+
+            var sdkFolder = useSimulatorSdk ? "Simulator" : "Device";
+            var sourcePath = Directory
+                .GetDirectories(packageCachePath, "com.unity.xr.visionos@*", SearchOption.TopDirectoryOnly)
+                .Select(packagePath => Path.Combine(
+                    packagePath,
+                    $"Runtime/Plugins/visionos/{sdkFolder}/arm64/libUnityVisionOS.a"))
+                .FirstOrDefault(File.Exists);
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                Debug.LogWarning($"Unity visionOS native library missing for {sdkFolder} SDK.");
+                return;
+            }
+
+            Directory.CreateDirectory(librariesPath);
+            File.Copy(sourcePath, destinationPath, overwrite: true);
+            Debug.Log($"Copied visionOS {sdkFolder} native library: {destinationPath}");
+        }
+
+        private static void PatchVisionOSXcodeProject(string fullBuildPath)
+        {
+            var pbxProjectPath = Directory
+                .GetDirectories(fullBuildPath, "*.xcodeproj", SearchOption.TopDirectoryOnly)
+                .Select(projectPath => Path.Combine(projectPath, "project.pbxproj"))
+                .FirstOrDefault(File.Exists);
+            if (string.IsNullOrEmpty(pbxProjectPath))
+            {
+                Debug.LogWarning($"visionOS Xcode project missing under: {fullBuildPath}");
+                return;
+            }
+
+            var source = File.ReadAllText(pbxProjectPath);
+            var patched = source.Replace("XROS_DEPLOYMENT_TARGET = 1.0;", "XROS_DEPLOYMENT_TARGET = 2.0;");
+            if (!patched.Contains("libUnityVisionOS.a"))
+            {
+                const string il2CppLibraryFlag = "\"\\\"$CONFIGURATION_BUILD_DIR/il2cpp.a\\\"\",";
+                const string visionOSLibraryFlag = "\"\\\"$(PROJECT_DIR)/Libraries/libUnityVisionOS.a\\\"\",";
+                patched = patched.Replace(
+                    il2CppLibraryFlag,
+                    il2CppLibraryFlag + "\n\t\t\t\t\t" + visionOSLibraryFlag);
+            }
+
+            if (!string.Equals(source, patched, StringComparison.Ordinal))
+            {
+                File.WriteAllText(pbxProjectPath, patched);
+                Debug.Log($"Patched visionOS Xcode project settings: {pbxProjectPath}");
+            }
         }
 
         private static void ReportBuildTarget(string groupName, string targetName)

@@ -349,6 +349,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             iconQuadRenderer.GetPropertyBlock(iconTexturePropertyBlock);
             iconTexturePropertyBlock.SetTexture(iconQuadTextureNameID, newIconTexture);
+            iconTexturePropertyBlock.SetTexture("_BaseMap", newIconTexture);
             iconQuadRenderer.SetPropertyBlock(iconTexturePropertyBlock);
 
             SetIconStyle(ButtonIconStyle.Quad);

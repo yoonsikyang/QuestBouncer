@@ -362,7 +362,7 @@ public class Manager : MonoBehaviour
         }
 
         // Press '1' key to toggle folder selector UI
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (HanyangKeyInput.GetKeyDown(KeyCode.Alpha1))
         {
             if (folderSelectorUI != null)
             {
@@ -391,13 +391,13 @@ public class Manager : MonoBehaviour
         }
 
         // Press '2' key to cycle WSS sub-modes
-        if (Input.GetKeyDown(KeyCode.Alpha2) && visualizationMode == VisualizationMode.WSS)
+        if (HanyangKeyInput.GetKeyDown(KeyCode.Alpha2) && visualizationMode == VisualizationMode.WSS)
         {
             CycleWSSSubMode();
         }
         
         // Press '3' key to recenter camera to current head position
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        if (HanyangKeyInput.GetKeyDown(KeyCode.Alpha3))
         {
             RecenterCamera();
         }
